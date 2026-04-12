@@ -10,8 +10,8 @@ class LocationService {
     );
 
     final response = await http.get(url, headers: {
-        "User-Agent": "flutter_app"
-      });
+  "User-Agent": "intern-app (priyanshukumar3644@gmail.com)"
+});
 
       if(response.statusCode == 200){
         final data = jsonDecode(response.body);

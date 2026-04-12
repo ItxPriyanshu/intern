@@ -41,7 +41,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Color(0xFF212728),
       body: SafeArea(
@@ -112,26 +111,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    TripsType(
-                      imageName: 'pickup',
-                      text: 'Outstation trip',
-                      color: Colors.white,
-                      height: 80,
-                      textColor: Color(0xFF38B000),
+                    InkWell(
+                       onTap: (){
+                        print("outstation trip selected");
+                      },
+                      child: TripsType(
+                        imageName: 'pickup',
+                        text: 'Outstation trip',
+                        color: Colors.white,
+                        height: 80,
+                        textColor: Color(0xFF38B000),
+                      ),
                     ),
-                    TripsType(
-                      imageName: 'train',
-                      text: 'Local Trip',
-                      color: Colors.white,
-                      height: 80,
-                      textColor: Color(0xFF38B000),
+                    InkWell(
+                      onTap: (){
+                        print("local trip selected");
+                      },
+                      child: TripsType(
+                        imageName: 'train',
+                        text: 'Local Trip',
+                        color: Colors.white,
+                        height: 80,
+                        textColor: Color(0xFF38B000),
+                      ),
                     ),
-                    TripsType(
-                      imageName: 'flight',
-                      text: 'Airport Transfer',
-                      color: Colors.white,
-                      height: 80,
-                      textColor: Color(0xFF38B000),
+                    InkWell(
+                      onTap: (){
+                        print("airport transfer selected");
+                      },
+                      child: TripsType(
+                        imageName: 'flight',
+                        text: 'Airport Transfer',
+                        color: Colors.white,
+                        height: 80,
+                        textColor: Color(0xFF38B000),
+                      ),
                     ),
                   ],
                 ),
@@ -176,8 +190,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           backgroundColor: const Color(0xFFC8E6C9),
                           height: 60,
                           controller: pickupController,
-                          onChanged: (val) =>
-                              ref.read(bookingProvider.notifier).setPick(val),
+                          onChanged: (val) {
+                            if(val.contains(",")){
+                            ref.read(bookingProvider.notifier).setPick(val);
+                          }},
                         ),
 
                         SizedBox(
@@ -191,8 +207,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           backgroundColor: const Color(0xFFC8E6C9),
                           height: 60,
                           controller: dropController,
-                          onChanged: (val) =>
-                              ref.read(bookingProvider.notifier).setDrop(val),
+                          onChanged: (val) {
+                            if(val.contains(",")){
+                            ref.read(bookingProvider.notifier).setDrop(val);
+                          }},
                         ),
 
                         SizedBox(
