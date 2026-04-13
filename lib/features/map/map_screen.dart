@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
+import 'package:lottie/lottie.dart' hide Marker;
 
 class MapScreen extends StatefulWidget {
   final String pickup;
@@ -18,16 +21,27 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   LatLng? pickupLatLng;
   LatLng? dropLatLng;
+  Position? lastPosition;
+  StreamSubscription<Position>? positionStream;
+  double travelledDistance = 0.0;
+bool rideStarted = false;
 
   List<LatLng> routePoints = [];
 
   bool isLoading = true;
+
+@override
+  void dispose() {
+    positionStream?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
     super.initState();
     loadLocations();
   }
+
 
   LatLng? parseLatLng(String value) {
     try {
@@ -83,6 +97,87 @@ class _MapScreenState extends State<MapScreen> {
       isLoading = false;
     });
   }
+
+
+  Future<void> requestPermission() async {
+  LocationPermission permission = await Geolocator.checkPermission();
+
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+  }
+}
+
+Future<void> startRide() async {
+  setState(() {
+    rideStarted = true;
+    travelledDistance = 0;
+  });
+  await requestPermission();
+
+  positionStream = Geolocator.getPositionStream(
+    locationSettings: const LocationSettings(
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 5,
+    ),
+  ).listen((Position position) {
+    if (!rideStarted) return;
+
+    final current = LatLng(position.latitude, position.longitude);
+
+    if (lastPosition != null) {
+      final distance = Distance();
+
+      travelledDistance += distance(
+        LatLng(lastPosition!.latitude, lastPosition!.longitude),
+        current,
+      );
+
+      setState(() {});
+    }
+
+    lastPosition = position;
+  });
+}
+
+void cancelRide() {
+  rideStarted = false;
+
+  positionStream?.cancel();
+  positionStream = null;
+
+  travelledDistance = 0;
+
+  Navigator.pop(context);
+}
+
+
+void showCancelLoaderAndNavigate() {
+  rideStarted = false;
+  positionStream?.cancel();
+  positionStream = null;
+
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    barrierColor: Colors.black.withOpacity(0.4),
+    builder: (context) {
+      return Center(
+        child: Lottie.asset(
+          'assets/lottie/cancel.json',
+          width: 150,
+          height: 150,
+        ),
+      );
+    },
+  );
+
+  Future.delayed(const Duration(seconds: 3), () {
+    Navigator.pop(context);
+
+    Navigator.pop(context);
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -153,17 +248,50 @@ class _MapScreenState extends State<MapScreen> {
                 child: Column(
                   children: [
 
-                    Text("Distance travelled : 00.00 KM",style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                              ),),
+                    Text(
+  "Distance travelled : ${(travelledDistance / 1000).toStringAsFixed(2)} KM",
+  style: GoogleFonts.poppins(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: Colors.black,
+  ),
+),
                               SizedBox(height: 10,),
                     InkWell(
                       onTap: (){
+                        if(!rideStarted){
+                          startRide();
+                        }
                         print("ride started");
+                        startRide();
                       },
-                      child: Container(
+                      child:rideStarted ? Container(
+                        height: 50,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          color: Colors.orange,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Ride started",
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                              
+                            ),SizedBox(width:5),SizedBox(
+                              height: 45,
+                              width: 45,
+                              child: Lottie.asset('assets/lottie/scooter_riding.json'),
+                            )
+                          ],
+                          
+                        ),
+                      ) :Container(
                         height: 50,
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -186,6 +314,7 @@ class _MapScreenState extends State<MapScreen> {
                     InkWell(
                        onTap: (){
                         print("ride cancelled");
+                        showCancelLoaderAndNavigate();
                       },
                       child: Container(
                         height: 50,

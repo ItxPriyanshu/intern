@@ -5,7 +5,7 @@ import '../../../core/services/location_service.dart';
 enum FieldType { text, date, time }
 
 class SearchInputField extends StatefulWidget {
-  final String label;
+  final String? label;
   final String hint;
   final IconData icon;
   final Color backgroundColor;
@@ -17,7 +17,7 @@ class SearchInputField extends StatefulWidget {
 
   const SearchInputField({
     super.key,
-    required this.label,
+     this.label,
     required this.hint,
     required this.icon,
     this.backgroundColor = const Color(0xFFC8E6C9),

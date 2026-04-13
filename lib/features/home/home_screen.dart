@@ -7,6 +7,7 @@ import 'package:intern/core/utils/responsive.dart';
 import 'package:intern/features/home/home_provider.dart';
 import 'package:intern/features/home/home_utils/trips_type.dart';
 import 'package:intern/features/home/home_utils/enry_fields.dart';
+import 'package:lottie/lottie.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -37,6 +38,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     dateController.dispose();
     timeController.dispose();
     super.dispose();
+  }
+
+  void showLoadingAndNavigate(
+    BuildContext context,
+    String pickup,
+    String drop,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.4),
+      builder: (context) {
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Lottie.asset(
+              'assets/lottie/scooter_riding_2.json',
+              width: 200,
+              height: 200,
+              repeat: true,
+            ),
+          ),
+        );
+      },
+    );
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.pop(context); // close popup
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MapScreen(pickup: pickup, drop: drop),
+        ),
+      );
+    });
   }
 
   @override
@@ -112,7 +152,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     InkWell(
-                       onTap: (){
+                      onTap: () {
                         print("outstation trip selected");
                       },
                       child: TripsType(
@@ -124,7 +164,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: (){
+                      onTap: () {
                         print("local trip selected");
                       },
                       child: TripsType(
@@ -136,7 +176,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     InkWell(
-                      onTap: (){
+                      onTap: () {
                         print("airport transfer selected");
                       },
                       child: TripsType(
@@ -184,16 +224,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Column(
                       children: [
                         SearchInputField(
-                          label: 'Pick-up City',
-                          hint: 'Type City Name',
+                          hint: 'Pick-up City',
                           icon: Icons.location_on,
                           backgroundColor: const Color(0xFFC8E6C9),
                           height: 60,
                           controller: pickupController,
                           onChanged: (val) {
-                            if(val.contains(",")){
-                            ref.read(bookingProvider.notifier).setPick(val);
-                          }},
+                            if (val.contains(",")) {
+                              ref.read(bookingProvider.notifier).setPick(val);
+                            }
+                          },
                         ),
 
                         SizedBox(
@@ -201,16 +241,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
 
                         SearchInputField(
-                          label: 'Drop City',
-                          hint: 'Type City Name',
+                          hint: 'Drop City',
                           icon: Icons.flag,
                           backgroundColor: const Color(0xFFC8E6C9),
                           height: 60,
                           controller: dropController,
                           onChanged: (val) {
-                            if(val.contains(",")){
-                            ref.read(bookingProvider.notifier).setDrop(val);
-                          }},
+                            if (val.contains(",")) {
+                              ref.read(bookingProvider.notifier).setDrop(val);
+                            }
+                          },
                         ),
 
                         SizedBox(
@@ -281,14 +321,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           child: ElevatedButton(
                             onPressed: () {
                               final booking = ref.read(bookingProvider);
-                              Navigator.push(
+                              showLoadingAndNavigate(
                                 context,
-                                MaterialPageRoute(
-                                  builder: (context) => MapScreen(
-                                    pickup: booking.pickup,
-                                    drop: booking.drop,
-                                  ),
-                                ),
+                                booking.pickup,
+                                booking.drop,
                               );
                             },
                             style: ElevatedButton.styleFrom(

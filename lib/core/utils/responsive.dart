@@ -18,9 +18,4 @@ class ResponsiveUi {
   static double heightPercent(BuildContext context, double percent){
     return height(context)*percent/100;
   }
-
-  static double font(BuildContext context, double size){
-    double baseWidth = 375;
-    return size*(width(context)/baseWidth);
-  }
 }
